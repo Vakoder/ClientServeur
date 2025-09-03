@@ -5,8 +5,10 @@ using System.Text;
 public class Client
 {
     private string message = "";
+    
     public void SendMessage()
     {
+
         TcpClient client = new TcpClient("127.0.0.1", 5001);
         NetworkStream flux = client.GetStream();
 
