@@ -12,3 +12,4 @@
 /Users/theoalanore/Documents/GitHub/ClientServeur/ConsoleApp2/obj/Debug/net9.0/ConsoleApp2.pdb
 /Users/theoalanore/Documents/GitHub/ClientServeur/ConsoleApp2/obj/Debug/net9.0/ConsoleApp2.genruntimeconfig.cache
 /Users/theoalanore/Documents/GitHub/ClientServeur/ConsoleApp2/obj/Debug/net9.0/ref/ConsoleApp2.dll
+/Users/theoalanore/Documents/GitHub/ClientServeur/ConsoleApp2/obj/Debug/net9.0/ConsoleApp2.sourcelink.json
