@@ -1,7 +1,6 @@
-using System;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
+
 
 public class Client
 {
@@ -19,7 +18,7 @@ public class Client
 
         while (true)
         {
-            Console.Write("> Entez votre message : ");
+            Console.Write("> Entrez votre message : ");
             message = Console.ReadLine() ?? "";
             if (message.ToLower() == "exit")
                 break;
@@ -46,7 +45,7 @@ public class Client
                 incoming = Encoding.UTF8.GetString(buffer, 0, bytesLus).TrimEnd('\r', '\n');
                 Console.WriteLine();
                 Console.WriteLine(incoming);
-                Console.Write("> Entez votre message : ");
+                Console.Write("> Entrez votre message : ");
             }
         }
         catch (Exception ex)

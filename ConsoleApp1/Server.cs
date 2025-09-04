@@ -2,14 +2,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 public class Server
 {
     private int clientCounter = 0;
     private readonly ConcurrentDictionary<int, TcpClient> clients = new();
     private int id = 0;
+    private int bytesLus = 0;
 
 
     public void Start()
@@ -40,7 +40,7 @@ public class Server
                 byte[] buffer = new byte[1024];
                 while (true)
                 {
-                    int bytesLus = flux.Read(buffer, 0, buffer.Length);
+                    bytesLus = flux.Read(buffer, 0, buffer.Length);
                     if (bytesLus == 0)
                         break;
 
