@@ -1,13 +1,16 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class Server
 {
-    private string message = "";
-    private int ClientId = 0;
+    private int clientCounter = 0;
+    private readonly ConcurrentDictionary<int, TcpClient> clients = new();
     private int id = 0;
-    private int bytesLus = 0;
+
 
     public void Start()
     {
@@ -19,9 +22,9 @@ public class Server
         {
             Console.WriteLine("En attente de connexion...");
             TcpClient client = serveur.AcceptTcpClient();
-            id = Interlocked.Increment(ref ClientId);
+            id = Interlocked.Increment(ref clientCounter);
+            clients[id] = client;
             Console.WriteLine($"Client {id} connecté.");
-
 
             Task.Run(() => HandleClient(id, client));
         }
@@ -29,20 +32,23 @@ public class Server
 
     private void HandleClient(int clientId, TcpClient client)
     {
-        
-        NetworkStream flux = client.GetStream();
-        
-        byte[] buffer = new byte[1024];
         try
         {
-            while (true)
+            using (client)
+            using (NetworkStream flux = client.GetStream())
             {
-                bytesLus = flux.Read(buffer, 0, buffer.Length);
-                if (bytesLus == 0) 
-                    break;
+                byte[] buffer = new byte[1024];
+                while (true)
+                {
+                    int bytesLus = flux.Read(buffer, 0, buffer.Length);
+                    if (bytesLus == 0)
+                        break;
 
-                message = Encoding.UTF8.GetString(buffer, 0, bytesLus);
-                Console.WriteLine($"Client {clientId} : {message}");
+                    string message = Encoding.UTF8.GetString(buffer, 0, bytesLus).TrimEnd('\r', '\n');
+                    Console.WriteLine($"Client {clientId} : {message}");
+
+                    BroadcastMessage(clientId, message);
+                }
             }
         }
         catch (Exception ex)
@@ -51,7 +57,39 @@ public class Server
         }
         finally
         {
+            clients.TryRemove(clientId, out _);
             Console.WriteLine($"Client {clientId} déconnecté.");
+        }
+    }
+
+    private void BroadcastMessage(int fromClientId, string message)
+    {
+        byte[] data = Encoding.UTF8.GetBytes($"Client {fromClientId}: {message}\n");
+
+        foreach (var kv in clients.ToArray())
+        {
+            id = kv.Key;
+            TcpClient tcp = kv.Value;
+
+            if (id == fromClientId)
+                continue;
+
+            if (!tcp.Connected)
+            {
+                clients.TryRemove(id, out _);
+                continue;
+            }
+
+            try
+            {
+                NetworkStream stream = tcp.GetStream();
+                stream.Write(data, 0, data.Length);
+                stream.Flush();
+            }
+            catch
+            {
+                clients.TryRemove(id, out _);
+            }
         }
     }
 }
